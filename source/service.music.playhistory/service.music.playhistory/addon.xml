@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<addon id="service.music.playhistory" name="Music Play History" version="0.1.0" provider-name="Custom Play History">
+  <requires>
+    <import addon="xbmc.python" version="3.0.0" />
+  </requires>
+  <extension point="xbmc.service" library="service.py" start="startup" />
+  <extension point="xbmc.python.pluginsource" library="plugin.py">
+    <provides>audio</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en_GB">Persistent music play history foundation</summary>
+    <description lang="en_GB">Tracks qualifying music plays locally for future cached Most Played views.</description>
+    <platform>all</platform>
+  </extension>
+</addon>

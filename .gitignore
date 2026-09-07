@@ -1,0 +1,13 @@
+# Third-party SiLVO verification fixture; retained locally only.
+tests/fixtures/silvo-10.0.3-stock/*.zip
+tests/fixtures/silvo-10.0.3-stock/addon.xml
+tests/fixtures/silvo-10.0.3-stock/16x9/
+tests/fixtures/silvo-10.0.3-stock/shortcuts/
+
+# Generated Python and temporary files.
+__pycache__/
+*.py[cod]
+*.tmp
+*.db
+*.db-wal
+*.db-shm

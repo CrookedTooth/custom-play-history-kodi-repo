@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<addons>
+  <addon id="service.music.playhistory" name="Music Play History" version="0.1.0" provider-name="Custom Play History">
+    <requires><import addon="xbmc.python" version="3.0.0"/></requires>
+    <extension point="xbmc.service" library="service.py" start="startup"/>
+    <extension point="xbmc.python.pluginsource" library="plugin.py" provides="audio"/>
+    <extension point="xbmc.addon.metadata"><summary lang="en_GB">Local music play history and rankings.</summary><platform>all</platform></extension>
+  </addon>
+  <addon id="script.customplayhistory.silvo" name="Custom Play History SiLVO Integration" version="0.1.0" provider-name="Custom Play History">
+    <requires><import addon="xbmc.python" version="3.0.0"/><import addon="service.music.playhistory" version="0.1.0"/></requires>
+    <extension point="xbmc.python.script" library="default.py"/>
+    <extension point="xbmc.addon.metadata"><summary lang="en_GB">Guarded Aeon Nox: SiLVO 10.0.3 integration.</summary><platform>all</platform></extension>
+  </addon>
+</addons>

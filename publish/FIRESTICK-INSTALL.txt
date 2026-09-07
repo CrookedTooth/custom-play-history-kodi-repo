@@ -1,0 +1,13 @@
+Custom Play History — Fire Stick installation
+
+1. Download this bootstrap ZIP: https://crookedtooth.github.io/custom-play-history-kodi-repo/repository.customplayhistory-0.1.0.zip
+2. In Kodi: Add-ons > Install from zip file. Select that ZIP.
+3. Choose Install from repository > Custom Play History Repository > Services > Music Play History.
+4. Restart Kodi once. The service starts with empty local history.
+5. Optional SiLVO integration (only Aeon Nox: SiLVO 10.0.3): install it from the same repository under Programs.
+6. Run Custom Play History SiLVO Integration from Programs. Choose Install.
+7. Reload Skin or restart Kodi, then select Custom Play History for Music Widget 1.
+
+The companion verifies the exact supported skin version and anchors before editing. If Kodi cannot write the installed skin directory, it stops safely and reports no change. To remove the integration, run the companion and choose Restore; it restores the exact backed-up files.
+
+No Windows, ADB, shell, administrator access, library scan, or scraper is required.

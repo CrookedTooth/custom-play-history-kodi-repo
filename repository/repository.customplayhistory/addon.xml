@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<addon id="repository.customplayhistory" name="Custom Play History Repository" version="0.1.0" provider-name="Custom Play History">
+  <extension point="xbmc.addon.repository">
+    <info compressed="false">https://crookedtooth.github.io/custom-play-history-kodi-repo/addons.xml</info>
+    <checksum>https://crookedtooth.github.io/custom-play-history-kodi-repo/addons.xml.md5</checksum>
+    <datadir zip="true">https://crookedtooth.github.io/custom-play-history-kodi-repo/</datadir>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en_GB">Local playback-history add-ons.</summary>
+    <description lang="en_GB">Repository metadata for Custom Play History and its optional SiLVO 10.0.3 integration.</description>
+    <platform>all</platform>
+  </extension>
+</addon>

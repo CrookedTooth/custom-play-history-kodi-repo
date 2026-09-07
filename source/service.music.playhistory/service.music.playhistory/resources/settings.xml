@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings version="1">
+  <section id="service.music.playhistory" label="-1">
+    <category id="continuity" label="-1">
+      <group id="1" label="-1">
+        <setting id="continuity_source_root_id" type="string" label="-1" help="">
+          <level>0</level>
+          <default></default>
+          <constraints><allowempty>true</allowempty></constraints>
+          <control type="edit" format="string"><heading>-1</heading></control>
+        </setting>
+        <setting id="continuity_physical_source_root" type="string" label="-1" help="">
+          <level>0</level>
+          <default></default>
+          <constraints><allowempty>true</allowempty></constraints>
+          <control type="edit" format="string"><heading>-1</heading></control>
+        </setting>
+        <setting id="continuity_source_root_preserved_v1" type="string" label="-1" help="">
+          <level>0</level>
+          <default></default>
+          <visible>false</visible>
+          <constraints><allowempty>true</allowempty></constraints>
+          <control type="edit" format="string"><heading>-1</heading></control>
+        </setting>
+      </group>
+    </category>
+  </section>
+</settings>

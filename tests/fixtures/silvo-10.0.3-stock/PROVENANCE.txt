@@ -1,0 +1,20 @@
+Canonical stock fixture: Aeon Nox: SiLVO 10.0.3 for Kodi Omega
+
+Download source:
+https://mirrors.kodi.tv/addons/omega/skin.aeon.nox.silvo/skin.aeon.nox.silvo-10.0.3.zip
+
+Kodi’s official Omega add-on listing identifies this package as:
+  addon id: skin.aeon.nox.silvo
+  version: 10.0.3
+  published: 2025-02-08 (listing); package archive entries: 2024-06-11
+
+Original ZIP SHA-256:
+BF769C6F1ED86ADA8C30829B9C0EE90DB795B0A1676E4AEDB93727767F0FCC8A
+
+Extracted canonical files:
+  addon.xml SHA-256: 8EF7F03CCD350E16F6E8773AFD7F86D043A4E9988C9BBAB4FEBBF854B83AC0D8
+  16x9/Includes_Widgets.xml SHA-256: 15CEB3E24BFA10C6BD54A054282C9DFB1F9A8A879D860EE2F57A6D77142D9B3A
+  shortcuts/overrides.xml SHA-256: 0EE42C9A81CB85C353D7BEC856824AF0D6D5D47D61B76F8B93C2175DE75F8501
+
+These files are immutable fixture input. The installer uses structural anchors
+verified against copies; it never replaces installed skin files with a fixture.

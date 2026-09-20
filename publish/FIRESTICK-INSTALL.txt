@@ -1,6 +1,6 @@
 Custom Play History — Fire Stick installation
 
-1. Download this bootstrap ZIP: https://crookedtooth.github.io/custom-play-history-kodi-repo/repository.customplayhistory-0.1.0.zip
+1. Download this bootstrap ZIP: https://crookedtooth.github.io/custom-play-history-kodi-repo/repository.customplayhistory-0.1.1.zip
 2. In Kodi: Add-ons > Install from zip file. Select that ZIP.
 3. Choose Install from repository > Custom Play History Repository > Services > Music Play History.
 4. Restart Kodi once. The service starts with empty local history.

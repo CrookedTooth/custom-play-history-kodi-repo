@@ -20,7 +20,7 @@ After installing the companion, run it from Programs. Then reload the skin or re
 
 ## Install from this repository
 
-Install [repository.customplayhistory-0.1.0.zip](https://crookedtooth.github.io/custom-play-history-kodi-repo/repository.customplayhistory-0.1.0.zip) using Kodi’s **Install from zip file** command. Then choose **Install from repository → Custom Play History Repository** and install the service. The optional SiLVO integration is available from the same repository.
+Install [repository.customplayhistory-0.1.1.zip](https://crookedtooth.github.io/custom-play-history-kodi-repo/repository.customplayhistory-0.1.1.zip) using Kodi’s **Install from zip file** command. Then choose **Install from repository → Custom Play History Repository** and install the service. The optional SiLVO integration is available from the same repository.
 
 A new service installation begins with empty history. A track qualifies after 80% of its duration, capped at four minutes. An album qualifies after at least three distinct tracks and 40% of its tracks.
 

@@ -112,6 +112,11 @@ def test_anchor_failures(box):
     assert read_file(box.paths['widgets']) == broken_widgets
     assert read_file(box.paths['overrides']) == box.originals['overrides']
     box.write('widgets', box.originals['widgets'])
+    duplicate = b'\t\t\t<include>skinshortcuts-template-widget1</include>'
+    box.write('widgets', box.originals['widgets'].replace(duplicate, duplicate + b'\n' + duplicate, 1))
+    result = installer.install()
+    assert not result['ok'] and result['code'] == 'E104'
+    box.write('widgets', box.originals['widgets'])
     box.write('overrides', box.originals['overrides'].replace(b'\t<!-- Backgrounds -->', b'\t<!-- Other -->', 1))
     result = installer.install()
     assert not result['ok'] and result['code'] == 'E105'

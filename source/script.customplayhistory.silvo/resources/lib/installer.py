@@ -37,6 +37,31 @@ _ANIMATION_CONDITIONS = (
 _EXCLUSION = b' + !String.IsEqual(Container(9000).ListItem.Property(widgetName),Custom Play History)'
 
 
+class InstallerError(Exception):
+    """A bounded, user-displayable guarded-installer failure."""
+    def __init__(self, code, reason, filename=None, state='UNKNOWN'):
+        Exception.__init__(self, reason)
+        self.code = code
+        self.reason = reason
+        self.filename = filename
+        self.state = state
+
+
+def _result(ok, code, reason, state='UNKNOWN', changed='NO', backup='NO'):
+    return {'ok': bool(ok), 'code': code, 'reason': reason, 'state': state,
+            'changed': changed, 'backup': backup}
+
+
+def format_result(result):
+    """Short, safe diagnostic text suitable for a Kodi dialog/photo."""
+    heading = 'Installation complete' if result['ok'] else 'Installation failed'
+    return '\n'.join((heading,
+                      '%s — %s' % (result['code'], result['reason']),
+                      'State: %s' % result['state'],
+                      'Changes made: %s' % result['changed'],
+                      'Backup created: %s' % result['backup']))
+
+
 def _translated(path):
     return xbmcvfs.translatePath(path)
 
@@ -95,6 +120,24 @@ def _version(addon_data):
     if root.attrib.get('id') != SKIN_ID:
         raise ValueError('installed addon.xml is not %s' % SKIN_ID)
     return root.attrib.get('version', '')
+
+
+def _classify_exception(exc, state):
+    if isinstance(exc, InstallerError):
+        exc.state = state if exc.state == 'UNKNOWN' else exc.state
+        return exc
+    message = str(exc)
+    if 'XML' in message:
+        return InstallerError('E107', message, None, state)
+    if 'overrides' in message:
+        return InstallerError('E105', message, 'overrides.xml', state)
+    if 'Widget 1' in message or 'renderer' in message or 'Includes_Widgets' in message:
+        return InstallerError('E104', message, 'Includes_Widgets.xml', state)
+    if 'backup' in message:
+        return InstallerError('E201', message, None, state)
+    if 'write' in message or 'replace' in message:
+        return InstallerError('E208', message, None, state)
+    return InstallerError('E199', message or exc.__class__.__name__, None, state)
 
 
 def _state(widgets, overrides):
@@ -178,52 +221,80 @@ def _restore_directory(paths, directory):
 
 
 def install():
+    """Fail closed, including every pre-write guard and preflight read."""
     paths = _skin_paths()
-    if not all(os.path.isfile(paths[key]) for key in ('addon', 'widgets', 'overrides')):
-        return 'Aeon Nox: SiLVO files were not found. No files changed.'
-    addon, widgets, overrides = (_read(paths[key]) for key in ('addon', 'widgets', 'overrides'))
-    version = _version(addon)
-    if version != SKIN_VERSION:
-        return 'Aeon Nox: SiLVO %s is unsupported; only 10.0.3 is supported. No files changed.' % version
-    state = _state(widgets, overrides)
-    if state == 'installed':
-        return 'Custom Play History integration is already installed; no files changed.'
-    if state == 'partial':
-        return 'Partial or unexpected Custom Play History integration detected. No files changed.'
-    renderer = _read(_renderer_path())
-    _parse(b'<includes>' + renderer + b'</includes>', 'renderer payload')
-    originals = {'widgets': widgets, 'overrides': overrides}
+    state = 'UNKNOWN'
+    backup = None
+    mutation_started = False
     try:
-        patched = {'widgets': _patch_widgets(widgets, renderer), 'overrides': _patch_overrides(overrides)}
-        backup = _backup(paths, originals)
-        _write(paths['widgets'], patched['widgets'])
-        _write(paths['overrides'], patched['overrides'])
-        if _read(paths['widgets']) != patched['widgets'] or _read(paths['overrides']) != patched['overrides']:
-            raise ValueError('written skin files did not verify byte-for-byte')
-        return 'Installed. Backup: %s. Reload Skin or restart Kodi to activate it.' % backup
-    except Exception as exc:
+        missing = [key for key in ('addon', 'widgets', 'overrides') if not os.path.isfile(paths[key])]
+        if missing:
+            filename = {'addon': 'addon.xml', 'widgets': 'Includes_Widgets.xml',
+                        'overrides': 'overrides.xml'}[missing[0]]
+            raise InstallerError('E101', '%s was not found' % filename, filename)
         try:
-            if 'backup' in locals():
+            addon, widgets, overrides = (_read(paths[key]) for key in ('addon', 'widgets', 'overrides'))
+        except Exception as exc:
+            raise InstallerError('E102', 'Unable to read required SiLVO file: %s' % exc)
+        try:
+            version = _version(addon)
+        except Exception as exc:
+            raise InstallerError('E103', 'skin addon.xml is invalid: %s' % exc, 'addon.xml')
+        if version != SKIN_VERSION:
+            raise InstallerError('E201', 'Unsupported SiLVO version %s; only 10.0.3 is supported' % (version or '(missing)'), 'addon.xml')
+        state = _state(widgets, overrides)
+        if state == 'installed':
+            return _result(True, 'I001', 'Integration is already installed', state)
+        if state == 'partial':
+            raise InstallerError('E301', 'Partial or unrecognized Custom Play History integration detected', state=state)
+        try:
+            renderer = _read(_renderer_path())
+            _parse(b'<includes>' + renderer + b'</includes>', 'renderer payload')
+        except Exception as exc:
+            raise InstallerError('E106', 'Bundled renderer payload is unreadable or invalid: %s' % exc)
+        originals = {'widgets': widgets, 'overrides': overrides}
+        patched = {'widgets': _patch_widgets(widgets, renderer), 'overrides': _patch_overrides(overrides)}
+        _parse(patched['widgets'], 'patched Includes_Widgets.xml')
+        _parse(patched['overrides'], 'patched overrides.xml')
+        try:
+            backup = _backup(paths, originals)
+        except Exception as exc:
+            raise InstallerError('E202', 'Unable to create a verified backup: %s' % exc)
+        try:
+            mutation_started = True
+            _write(paths['widgets'], patched['widgets'])
+            _write(paths['overrides'], patched['overrides'])
+            if _read(paths['widgets']) != patched['widgets'] or _read(paths['overrides']) != patched['overrides']:
+                raise InstallerError('E209', 'Written skin files did not verify byte-for-byte')
+        except Exception as exc:
+            raise _classify_exception(exc, state)
+        return _result(True, 'I002', 'Installed. Reload Skin or restart Kodi to activate it.', state,
+                       'YES', 'YES')
+    except Exception as exc:
+        failure = _classify_exception(exc, state)
+        if backup and mutation_started:
+            try:
                 _restore_directory(paths, backup)
-            else:
-                _write(paths['widgets'], originals['widgets'])
-                _write(paths['overrides'], originals['overrides'])
-        except Exception:
-            pass
-        return 'Installation stopped safely: %s' % exc
+            except Exception as rollback_exc:
+                failure = InstallerError('E901', 'Install failed and automatic rollback also failed: %s' % rollback_exc,
+                                         state=state)
+        return _result(False, failure.code, failure.reason, failure.state,
+                       'NO', 'YES' if backup else 'NO')
 
 
 def restore():
     paths = _skin_paths()
     root = _backup_root()
     if not os.path.isdir(root):
-        return 'No Custom Play History integration backup exists; no files changed.'
+        return _result(False, 'E401', 'No Custom Play History integration backup exists', 'UNKNOWN')
     candidates = [os.path.join(root, name) for name in os.listdir(root) if os.path.isdir(os.path.join(root, name))]
     if not candidates:
-        return 'No Custom Play History integration backup exists; no files changed.'
+        return _result(False, 'E401', 'No Custom Play History integration backup exists', 'UNKNOWN')
     latest = max(candidates, key=os.path.getmtime)
     try:
         _restore_directory(paths, latest)
-        return 'Restored exact pre-integration skin files from: %s. Reload Skin or restart Kodi.' % latest
+        return _result(True, 'I401', 'Restored exact pre-integration skin files. Reload Skin or restart Kodi.',
+                       'RESTORED', 'YES', 'YES')
     except Exception as exc:
-        return 'Restore stopped safely: %s' % exc
+        failure = _classify_exception(exc, 'RESTORE')
+        return _result(False, failure.code, failure.reason, failure.state)

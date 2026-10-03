@@ -14,7 +14,7 @@ The companion supports only `skin.aeon.nox.silvo` 10.0.3. It verifies the instal
 - `16x9/Includes_Widgets.xml`
 - `shortcuts/overrides.xml`
 
-It backs up the exact originals under its own Kodi addon-data directory, is idempotent, and can restore the latest backup. It never edits generated Skin Shortcuts files. On an unsupported version, a partial installation, a missing anchor, or an unwritable skin directory, it stops without modifying the skin.
+It backs up the exact originals under its own Kodi addon-data directory, is idempotent, and can restore the latest backup. It never edits generated Skin Shortcuts files. On an unsupported version, a partial installation, a missing anchor, or an unwritable skin directory, it stops without modifying the skin and displays a concise on-screen diagnostic code.
 
 After installing the companion, run it from Programs. Then reload the skin or restart Kodi. Select `Custom Play History` for Music Widget 1 in SiLVO’s Main Menu Customizer.
 

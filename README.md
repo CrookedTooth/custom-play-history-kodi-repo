@@ -2,7 +2,7 @@
 
 ## Beta: simplified installation
 
-**Manual testing beta:** Install the `Custom Play History` 0.2.0 service from this repository after installing the repository ZIP. It automatically installs its Custom Play History dependencies. Kodi 21 Omega and Aeon Nox: SiLVO 10.0.3 installed and active are prerequisites; SiLVO is not installed or activated automatically. Set SiLVO to CENTER, select Custom Play History for Music Widget 1, and choose List Extended as the widget style. LOW layout and Widget 2 are unsupported. Fresh installation and same-version reinstall remain unverified. Existing users do not need to install the beta.
+**Manual testing beta:** Install the `Custom Play History` 0.2.1 service from this repository after installing the repository ZIP. It automatically installs its Custom Play History dependencies. Kodi 21 Omega and Aeon Nox: SiLVO 10.0.3 installed and active are prerequisites; SiLVO is not installed or activated automatically. Set SiLVO to CENTER, select Custom Play History for Music Widget 1, and choose List Extended as the widget style. LOW layout and Widget 2 are unsupported. The preceding setup version 0.2.0 was installed and exercised on Windows Kodi 21.3; fresh installation of 0.2.1 and Android/Fire OS installation remain unverified. Same-version reinstall recovery remains unverified. Existing users do not need to install the beta.
 
 This repository contains two Kodi 21 Omega add-ons:
 

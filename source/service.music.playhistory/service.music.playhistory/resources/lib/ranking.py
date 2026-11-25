@@ -10,8 +10,11 @@ import time
 import xbmcgui
 import xbmcvfs
 
+from .identity import metadata_primary_artist_identity
+
 
 TOP_LIMIT = 50
+ARTIST_RANKING_NORMALIZATION_VERSION = "1"
 
 
 def _art(value):
@@ -44,6 +47,13 @@ class RankingEngine(object):
         if row and row[0] == '1':
             self.rebuild()
             return True
+        if self.database.schema_version() >= 13:
+            row = self.database.connection.execute(
+                "SELECT value FROM schema_meta "
+                "WHERE key='artist_ranking_normalization_version'").fetchone()
+            if not row or row[0] != ARTIST_RANKING_NORMALIZATION_VERSION:
+                self.rebuild_artists_only()
+                return True
         return False
 
     def rebuild(self):
@@ -64,10 +74,29 @@ class RankingEngine(object):
             if self.database.schema_version() >= 13:
                 for item in artists:
                     self.database.connection.execute("INSERT INTO artist_rank_cache(artist_key,rank_position,total_plays,updated_at,payload_json) VALUES(?,?,?,?,?)", (item['identity'], item['rank'], item['plays'], now, json.dumps(item, ensure_ascii=False)))
+                self.database.connection.execute("INSERT OR REPLACE INTO schema_meta(key,value) VALUES('artist_ranking_normalization_version',?)", (ARTIST_RANKING_NORMALIZATION_VERSION,))
             self.database.connection.execute("INSERT OR REPLACE INTO schema_meta(key,value) VALUES('rankings_dirty','0')")
             self.database.connection.execute("INSERT OR REPLACE INTO schema_meta(key,value) VALUES('rankings_updated_at',?)", (str(now),))
         self._publish_widget_revision()
         self.log("ranking cache rebuilt: %d tracks, %d albums, %d artists in %.3fs" % (len(tracks), len(albums), len(artists), time.monotonic() - started))
+
+    def rebuild_artists_only(self):
+        """Refresh only the derived artist cache after a ruleset upgrade.
+
+        This runs solely after Kodi has been idle.  It never touches raw
+        history, projections, track ranks, album ranks, or catalog data.
+        """
+        started = time.monotonic()
+        artists = self.artists()
+        now = int(time.time())
+        with self.database.connection:
+            self.database.connection.execute("DELETE FROM artist_rank_cache")
+            for item in artists:
+                self.database.connection.execute("INSERT INTO artist_rank_cache(artist_key,rank_position,total_plays,updated_at,payload_json) VALUES(?,?,?,?,?)", (item['identity'], item['rank'], item['plays'], now, json.dumps(item, ensure_ascii=False)))
+            self.database.connection.execute("INSERT OR REPLACE INTO schema_meta(key,value) VALUES('artist_ranking_normalization_version',?)", (ARTIST_RANKING_NORMALIZATION_VERSION,))
+            self.database.connection.execute("INSERT OR REPLACE INTO schema_meta(key,value) VALUES('rankings_updated_at',?)", (str(now),))
+        self._publish_widget_revision()
+        self.log("artist ranking cache normalized: %d artists in %.3fs" % (len(artists), time.monotonic() - started))
 
     def _tracks(self):
         if self.database.schema_version() >= 13:
@@ -167,14 +196,41 @@ class RankingEngine(object):
         """Top artists for a future widget/API; no full-library catalog read."""
         if self.database.schema_version() < 13:
             return []
-        rows = self.database.connection.execute("""SELECT a.artist_key,a.display_artist,
-            sum(p.play_count) AS plays,max(p.occurred_at) AS lastplayed
-            FROM metadata_event_projection p JOIN metadata_artist a ON a.artist_key=p.metadata_artist_key
-            GROUP BY a.artist_key ORDER BY plays DESC,lastplayed DESC,a.artist_key LIMIT ?""",
-            (TOP_LIMIT,)).fetchall()
-        return [{'identity':row['artist_key'],'artist':row['display_artist'] or '',
-                 'plays':row['plays'],'lastplayed':row['lastplayed'] or 0,'rank':index}
-                for index,row in enumerate(rows,1)]
+        # Work from the existing, bounded metadata-event projection so this
+        # accepts exactly the historical and future events already eligible
+        # for artist ranking.  Joining immutable identities supplies Album
+        # Artist only for conservative primary-credit confirmation; it does
+        # not query Kodi or enumerate the music library.
+        rows = self.database.connection.execute("""SELECT p.play_count,p.occurred_at,
+                t.artist AS performer,ai.artist AS album_artist,
+                fallback.display_artist AS fallback_artist
+            FROM metadata_event_projection p
+            LEFT JOIN play_event e ON e.event_key=p.event_key
+            LEFT JOIN track_identity t ON t.identity_key=e.track_key
+            LEFT JOIN album_identity ai ON ai.album_key=e.album_key
+            LEFT JOIN metadata_artist fallback ON fallback.artist_key=p.metadata_artist_key
+            WHERE p.exclusion_reason IS NULL""").fetchall()
+        grouped = {}
+        for row in rows:
+            artist_key, unused_normalized, display = metadata_primary_artist_identity(
+                row['performer'], row['album_artist'])
+            # A historical projection that was once eligible remains eligible
+            # even if an old identity row has incomplete text unexpectedly.
+            if not artist_key:
+                artist_key, unused_normalized, display = metadata_primary_artist_identity(
+                    row['fallback_artist'], None)
+            if not artist_key:
+                continue
+            item = grouped.setdefault(artist_key, {
+                'identity': artist_key, 'artist': display, 'plays': 0,
+                'lastplayed': 0})
+            item['plays'] += int(row['play_count'] or 0)
+            item['lastplayed'] = max(item['lastplayed'], int(row['occurred_at'] or 0))
+        result = list(grouped.values())
+        result.sort(key=lambda item: (-item['plays'], -item['lastplayed'], item['identity']))
+        for index, item in enumerate(result[:TOP_LIMIT], 1):
+            item['rank'] = index
+        return result[:TOP_LIMIT]
 
 
 class CacheReader(object):

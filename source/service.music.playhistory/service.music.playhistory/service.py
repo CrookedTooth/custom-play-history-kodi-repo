@@ -12,7 +12,7 @@ from resources.lib.database import HistoryDatabase
 from resources.lib.ranking import RankingEngine
 from resources.lib.tracker import PlaybackTracker
 from resources.lib.continuity import InboxProcessor
-from resources.lib.catalog import rows_from_kodi, CatalogRefreshAborted
+from resources.lib.catalog import rows_from_kodi, CatalogReadError, CatalogRefreshAborted
 from resources.lib.maintenance import PlaybackAwareCatalogGate, PlaybackStateProbe
 from resources.lib.source_root import configured_source_root
 
@@ -78,6 +78,7 @@ def run():
     # One initial full snapshot is explicit idle maintenance, never playback
     # or widget work.  Later refresh policy remains separately controlled.
     catalog_due = database.connection.execute("SELECT COUNT(*) FROM catalog_generation WHERE state='complete'").fetchone()[0] == 0
+    deferred_request_token = None
     playback_state = PlaybackStateProbe()
     catalog_gate = PlaybackAwareCatalogGate(
         playback_state, time.monotonic, CATALOG_IDLE_GRACE_SECONDS)
@@ -86,16 +87,21 @@ def run():
             tracker.tick()
             rankings.maybe_rebuild_when_idle(tracker.isPlayingAudio())
             if monitor.consume_catalog_sync_due():
+                deferred_request_token = None
                 if database.schema_version() >= 13:
-                    # Metadata-ranking history is event driven.  A library
-                    # scan never initiates an exhaustive catalog generation.
-                    log("AudioLibrary.OnScanFinished observed; metadata rankings need no catalog refresh")
+                    if database.connection.execute("SELECT COUNT(*) FROM catalog_generation WHERE state='complete'").fetchone()[0] == 0:
+                        catalog_due = True
+                        log("AudioLibrary.OnScanFinished observed; scheduling missing initial catalog")
+                    else:
+                        log("AudioLibrary.OnScanFinished observed; metadata rankings need no catalog refresh")
                 else:
                     database.request_catalog_refresh()
                     log("queued catalog synchronization after AudioLibrary.OnScanFinished")
             refresh_requested = database.catalog_refresh_requested()
+            refresh_row = database.connection.execute("SELECT value FROM schema_meta WHERE key='catalog_refresh_requested_at'").fetchone() if refresh_requested else None
+            refresh_token = refresh_row[0] if refresh_row else None
             cleanup_generation = database.catalog_cleanup_pending_generation()
-            if catalog_gate.ready(catalog_due or refresh_requested or cleanup_generation is not None):
+            if catalog_gate.ready(catalog_due or (refresh_requested and refresh_token != deferred_request_token) or cleanup_generation is not None):
                 refresh_started = time.monotonic()
                 try:
                     home = xbmcgui.Window(10000)
@@ -119,17 +125,28 @@ def run():
                             # media start.
                             if playback_state():
                                 raise CatalogRefreshAborted('media playback started after catalog read')
-                            database.replace_album_catalog_staged(
-                                rows, requested_refresh=refresh_requested,
-                                source_root=source_root, should_abort=playback_state,
-                                phase_callback=lambda phase: home.setProperty(
-                                    'MusicPlayHistory.CatalogRefreshPhase', phase))
+                            if xbmc.getCondVisibility('Library.IsScanningMusic'):
+                                raise CatalogReadError('music library scan began after catalog read')
+                            if rows:
+                                database.replace_album_catalog_staged(
+                                    rows, requested_refresh=refresh_requested,
+                                    source_root=source_root, should_abort=playback_state,
+                                    phase_callback=lambda phase: home.setProperty(
+                                        'MusicPlayHistory.CatalogRefreshPhase', phase))
+                            else:
+                                log('verified empty music library; catalog unchanged until a library scan')
+                                deferred_request_token = refresh_token
                         finally:
                             # Explicit repair maintenance must not retain the
                             # full Kodi-song materialization in this long-lived
                             # service frame.
                             del rows
                         catalog_due = False
+                    catalog_gate.reset()
+                except CatalogReadError as exc:
+                    log('catalog read deferred without changing the trusted catalog: %s' % exc, xbmc.LOGWARNING)
+                    catalog_due = False
+                    deferred_request_token = refresh_token
                     catalog_gate.reset()
                 except CatalogRefreshAborted as exc:
                     # The persistent request remains present; a failed candidate

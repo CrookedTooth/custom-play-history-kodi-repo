@@ -131,6 +131,64 @@ def metadata_artist_identity(value):
     return ("metadata-artist:" + _hash([artist]), artist) if artist else (None, "")
 
 
+# Artist-ranking normalization is intentionally separate from
+# ``metadata_artist_identity`` above.  The latter is durable source metadata
+# and must continue to preserve Kodi's supplied credit verbatim.  These rules
+# apply only while aggregating the derived Most Played Artists cache.
+_FEATURED_ARTIST_SUFFIX = re.compile(
+    r"\s+(?:feat(?:\.|uring)?|ft\.?)\s+.+$", re.IGNORECASE)
+
+# Exact aliases only.  Do not use prefixes, substrings, or fuzzy matching:
+# artist names containing an ampersand are ordinary legitimate credits.
+_ARTIST_RANKING_ALIASES = {
+    "g. love": "G. Love & Special Sauce",
+    "g. love & special sauce": "G. Love & Special Sauce",
+}
+
+
+def _is_reliable_album_artist(value):
+    """True only for an explicit non-compilation Album Artist credit."""
+    return normalized_text(value) not in ("", "various artists")
+
+
+def metadata_primary_artist_identity(performer, album_artist):
+    """Return the conservative primary credit for derived artist rankings.
+
+    Kodi exposes multi-value music credits as a list; the tracker preserves
+    that list as a literal ``" / "`` join.  We use Album Artist only when it
+    exactly confirms the performer, or exactly confirms that first Kodi list
+    member.  This is not general delimiter splitting: ampersands, ``and``,
+    pluses, commas, and unconfirmed slash text remain intact.
+    """
+    original = text(performer)
+    if not original:
+        return None, "", ""
+
+    # A terminal, explicitly labelled feature is unambiguous.  Do not remove
+    # unlabelled collaborators or any other part of the credit.
+    primary = _FEATURED_ARTIST_SUFFIX.sub("", original).strip() or original
+    chosen = primary
+    album_credit = text(album_artist)
+    if _is_reliable_album_artist(album_credit):
+        if normalized_text(album_credit) == normalized_text(primary):
+            chosen = album_credit
+        # This exact separator is emitted by our own Kodi list handling.  It
+        # is therefore safe to inspect the first list member only when Album
+        # Artist independently confirms it.
+        elif " / " in original:
+            first_credit = original.split(" / ", 1)[0].strip()
+            if normalized_text(first_credit) == normalized_text(album_credit):
+                chosen = album_credit
+
+    # G. Love is an intentionally explicit, narrowly scoped display alias.
+    # It never applies to an unrelated name merely containing these words.
+    display = _ARTIST_RANKING_ALIASES.get(normalized_text(chosen), chosen)
+    normalized = normalized_text(display)
+    if not normalized:
+        return None, "", ""
+    return "metadata-artist:" + _hash([normalized]), normalized, display
+
+
 def metadata_album_identity(album_artist, artist, album):
     """Stable metadata album identity; AlbumArtist wins when Kodi supplies it."""
     credited = normalized_text(album_artist) or normalized_text(artist)

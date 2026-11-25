@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <addons>
+  <addon id="service.customplayhistory.setup" name="Custom Play History" version="0.2.0" provider-name="Custom Play History">
+    <requires><import addon="xbmc.python" version="3.0.0"/><import addon="service.music.playhistory" version="0.1.1"/><import addon="script.customplayhistory.silvo" version="0.1.2"/></requires>
+    <extension point="xbmc.service" library="service.py" start="startup"/>
+    <extension point="xbmc.addon.metadata"><summary lang="en_GB">BETA — automatic setup for the Custom Play History widget; fresh installation testing in progress.</summary><description lang="en_GB">BETA: Requires Kodi 21 Omega and active Aeon Nox: SiLVO 10.0.3. CENTER layout and Music Widget 1 with List Extended are required. LOW and Widget 2 are unsupported.</description><platform>all</platform></extension>
+  </addon>
   <addon id="service.music.playhistory" name="Music Play History" version="0.1.1" provider-name="Custom Play History">
     <requires><import addon="xbmc.python" version="3.0.0"/></requires>
     <extension point="xbmc.service" library="service.py" start="startup"/>

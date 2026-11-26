@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<addons><addon id="repository.customplayhistory" name="Kunsemiller Repository" version="0.1.2" provider-name="Custom Play History">
+<addons><addon id="repository.customplayhistory" name="Kunsemiller Repository" version="0.1.3" provider-name="Custom Play History">
   <extension point="xbmc.addon.repository">
     <dir>
       <info compressed="false">https://crookedtooth.github.io/custom-play-history-kodi-repo/addons.xml</info>
@@ -11,20 +11,20 @@
     <summary lang="en_GB">Custom Play History add-ons.</summary>
     <description lang="en_GB">Repository for Custom Play History.</description>
     <platform>all</platform>
-  </extension>
-</addon><addon id="service.customplayhistory.setup" name="Custom Play History" version="0.2.2" provider-name="Custom Play History">
+  <assets><icon>icon.png</icon></assets></extension>
+</addon><addon id="service.customplayhistory.setup" name="Custom Play History" version="0.2.3" provider-name="Custom Play History">
   <requires>
     <import addon="xbmc.python" version="3.0.0" />
-    <import addon="service.music.playhistory" version="0.1.3" />
-    <import addon="script.customplayhistory.silvo" version="0.1.3" />
+    <import addon="service.music.playhistory" version="0.1.4" />
+    <import addon="script.customplayhistory.silvo" version="0.1.4" />
   </requires>
   <extension point="xbmc.service" library="service.py" start="startup" />
   <extension point="xbmc.addon.metadata">
     <summary lang="en_GB">Complete installer — install this add-on only.</summary>
     <description lang="en_GB">Automatically installs its dependencies and integrates with active Aeon Nox: SiLVO 10.0.3. Requires Kodi 21 Omega, CENTER layout, Music Widget 1 and List Extended. LOW layout and Widget 2 are unsupported.</description>
     <platform>all</platform>
-  </extension>
-</addon><addon id="service.music.playhistory" name="Music Play History (Dependency)" version="0.1.3" provider-name="Custom Play History">
+  <assets><icon>icon.png</icon></assets></extension>
+</addon><addon id="service.music.playhistory" name="Music Play History (Dependency)" version="0.1.4" provider-name="Custom Play History">
   <requires>
     <import addon="xbmc.python" version="3.0.0" />
   </requires>
@@ -36,9 +36,9 @@
     <summary lang="en_GB">Automatically installed by Custom Play History.</summary>
     <description lang="en_GB">Internal tracking dependency automatically installed by Custom Play History; no separate installation is required.</description>
     <platform>all</platform>
-  </extension>
-</addon><addon id="script.customplayhistory.silvo" name="SiLVO Integration (Dependency)" version="0.1.3" provider-name="Custom Play History">
+  <assets><icon>icon.png</icon></assets></extension>
+</addon><addon id="script.customplayhistory.silvo" name="SiLVO Integration (Dependency)" version="0.1.4" provider-name="Custom Play History">
   <requires><import addon="xbmc.python" version="3.0.0" /><import addon="service.music.playhistory" version="0.1.0" /></requires>
   <extension point="xbmc.python.script" library="default.py" />
-  <extension point="xbmc.addon.metadata"><summary lang="en_GB">Automatically installed by Custom Play History.</summary><platform>all</platform><description lang="en_GB">Internal SiLVO integration dependency automatically installed by Custom Play History; no separate installation is required. Retains the guarded installer and restore function.</description></extension>
+  <extension point="xbmc.addon.metadata"><summary lang="en_GB">Automatically installed by Custom Play History.</summary><platform>all</platform><description lang="en_GB">Internal SiLVO integration dependency automatically installed by Custom Play History; no separate installation is required. Retains the guarded installer and restore function.</description><assets><icon>icon.png</icon></assets></extension>
 </addon></addons>

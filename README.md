@@ -1,6 +1,6 @@
 # Custom Play History for Kodi
 
-Available through **Kunsemiller Repository**
+By **Jeff Kunsemiller** · Available through **Kunsemiller Repository**
 
 <img src="https://crookedtooth.github.io/custom-play-history-kodi-repo/service.customplayhistory.setup/icon.png" width="128" alt="Custom Play History"> <img src="https://crookedtooth.github.io/custom-play-history-kodi-repo/repository.customplayhistory/icon.png" width="128" alt="Kunsemiller Repository">
 
@@ -15,7 +15,7 @@ See your **Most Played Albums, Most Played Artists and Most Played Tracks** toge
 ## Install
 
 1. Open **Settings → File manager → Add source**. Enter `https://crookedtooth.github.io/custom-play-history-kodi-repo/` and name it **Kunsemiller Repository**.
-2. Open **Settings → Add-ons → Install from zip file**. Enable Unknown sources if Kodi requires it. Open Kunsemiller Repository and install **repository.customplayhistory-0.1.3.zip**.
+2. Open **Settings → Add-ons → Install from zip file**. Enable Unknown sources if Kodi requires it. Open Kunsemiller Repository and install **repository.customplayhistory-0.1.4.zip**.
 3. Open **Install from repository → Kunsemiller Repository → Services**. Install **Custom Play History**—the **only** add-on you need to choose. Music Play History and SiLVO Integration install automatically as dependencies.
 4. Allow automatic setup and the skin refresh to complete. No manual Run operation, manual skin reload, separate dependency installation, or Kodi restart is required during normal installation.
 5. Open **Skin settings → Setup the Aeon Nox main menu → Music**. Set **Widget 1** to **Custom Play History** and **Widget Style** to **List Extended**. Return to the Music home screen.

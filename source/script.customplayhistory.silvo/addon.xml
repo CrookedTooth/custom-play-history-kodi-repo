@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<addon id="script.customplayhistory.silvo" name="SiLVO Integration (Dependency)" version="0.1.4" provider-name="Custom Play History">
+<addon id="script.customplayhistory.silvo" name="SiLVO Integration (Dependency)" version="0.1.5" provider-name="Jeff Kunsemiller">
   <requires><import addon="xbmc.python" version="3.0.0" /><import addon="service.music.playhistory" version="0.1.0" /></requires>
   <extension point="xbmc.python.script" library="default.py" />
   <extension point="xbmc.addon.metadata"><summary lang="en_GB">Automatically installed by Custom Play History.</summary><platform>all</platform><description lang="en_GB">Internal SiLVO integration dependency automatically installed by Custom Play History; no separate installation is required. Retains the guarded installer and restore function.</description><assets><icon>icon.png</icon></assets></extension>

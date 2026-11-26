@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='utf-8'?>
-<addon id="service.customplayhistory.setup" name="Custom Play History" version="0.2.3" provider-name="Custom Play History">
+<addon id="service.customplayhistory.setup" name="Custom Play History" version="0.2.4" provider-name="Jeff Kunsemiller">
   <requires>
     <import addon="xbmc.python" version="3.0.0" />
-    <import addon="service.music.playhistory" version="0.1.4" />
-    <import addon="script.customplayhistory.silvo" version="0.1.4" />
+    <import addon="service.music.playhistory" version="0.1.5" />
+    <import addon="script.customplayhistory.silvo" version="0.1.5" />
   </requires>
   <extension point="xbmc.service" library="service.py" start="startup" />
   <extension point="xbmc.addon.metadata">

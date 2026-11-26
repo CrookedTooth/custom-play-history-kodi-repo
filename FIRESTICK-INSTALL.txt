@@ -1,10 +1,10 @@
-Custom Play History installation (Android / Fire OS not yet runtime-verified)
+Custom Play History by Jeff Kunsemiller (Android / Fire OS not yet runtime-verified)
 
 Requires Kodi 21 Omega and Aeon Nox: SiLVO 10.0.3 installed and active.
 Set the SiLVO main menu to CENTER. LOW and Widget 2 are unsupported.
 
 1. Add https://crookedtooth.github.io/custom-play-history-kodi-repo/ as a file source.
-2. Install repository.customplayhistory-0.1.3.zip from that source.
+2. Install repository.customplayhistory-0.1.4.zip from that source.
 3. Open Install from repository > Kunsemiller Repository > Services.
 4. Install Custom Play History only. Dependencies install automatically.
 5. Select Custom Play History for Music Widget 1, and set Widget Style to List Extended.
